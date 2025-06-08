@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 
@@ -9,4 +9,9 @@ import { PaymentService } from './payment.service';
 @ApiTags('Payment')
 export class PaymentController {
   constructor(private paymentService: PaymentService) {}
+
+  @Post('ingest')
+  importFromJson(@Query('type') type: 'settlement' | 'refund' | 'support') {
+    return this.paymentService.importFromJson(type);
+  }
 }

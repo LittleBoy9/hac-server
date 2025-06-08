@@ -25,6 +25,7 @@ Rules:
 - If there are numerous records, then just summarise them.
 - Keep it structured and clean. Do not repeat the query or mention "the data shows" or "based on the data".
 - Highlight trends, anomalies if possible.
+- the currency is in INR.
 - If no records are present, just respond: "No records found for this query."
 
 Merchant's Question: "${query}"

@@ -4,7 +4,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { DatabaseConfig } from './core/database/database.config';
 import * as Joi from 'joi';
 import envSchema from '@constants/env-schema';
-import { AiModule } from '@modules/humanResp/ai.module';
+import { AiModule } from '@modules/ai/ai.module';
 
 @Module({
   imports: [

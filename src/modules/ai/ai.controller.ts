@@ -1,11 +1,20 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { AiService } from './ai.service';
 
-@Controller('ai')
+@Controller({
+  path: 'ai',
+  version: '1',  
+
+})
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 
-  @Post('test-response')
+  @Get()
+  getHello(): string {
+    return 'Hello from AI Module!';
+  }
+
+  @Post()
   async testResponse(
     @Body() body: { query: string; data: any }
   ): Promise<{ response: string }> {

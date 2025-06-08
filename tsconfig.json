@@ -16,6 +16,16 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      // "@/*": ["./*"],
+      "@modules/*": ["src/modules/*"],
+      "@constants/*": ["src/core/constants/*"],
+      "@seeder/*": ["src/core/seeder/*"],
+      "@provider/*": ["src/core/providers/*"],
+      "@decorators/*": ["src/core/decorators/*"],
+      "@utils/*": ["src/core/utils/*"],
+      "@rollback/*": ["src/core/rollback/*"]
+    }
   }
 }

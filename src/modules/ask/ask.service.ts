@@ -5,6 +5,7 @@ import { refund, support, settlement } from '@constants/index';
 // import { getSqlQuery } from '@utils/gemini';
 import { GoogleGenAI } from '@google/genai';
 import { PaymentService } from '@modules/payment/v1/payment.service';
+import { AiService } from '@modules/ai/ai.service';
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -14,7 +15,10 @@ const ai = new GoogleGenAI({
 export class AskService {
   private tableColumns: Record<string, string[]>;
 
-  constructor(private paymentService: PaymentService) {
+  constructor(
+    private paymentService: PaymentService,
+    private aiService: AiService,
+  ) {
     this.tableColumns = {
       refund,
       support,
@@ -164,7 +168,13 @@ export class AskService {
     try {
       const result = await this.getSqlQuery(query);
       const data = await this.paymentService.getDataByQuery(result);
-      return { data };
+      const prompt = this.aiService.buildPrompt(
+        `SQL-${result}\nQuery-${query}`,
+        data,
+      );
+      const response = await this.aiService.getGPTResponse('gpt-4', prompt);
+      // return { data, response };
+      return response;
     } catch (e) {
       console.error(e);
       return null;

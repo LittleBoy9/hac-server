@@ -6,6 +6,7 @@ import * as Joi from 'joi';
 import envSchema from '@constants/env-schema';
 import { AskModule } from '@modules/ask/ask.module';
 // import { PaymentModule } from '@modules/payment/payment.module';
+import { AiModule } from '@modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -18,11 +19,13 @@ import { AskModule } from '@modules/ask/ask.module';
         abortEarly: false,
       },
     }),
-    // SequelizeModule.forRootAsync({
-    //   useClass: DatabaseConfig,
-    // }),
+    SequelizeModule.forRootAsync({
+      useClass: DatabaseConfig,
+    }),
 
-    AskModule
+    AskModule,
+
+    AiModule,
   ],
   providers: [],
 })

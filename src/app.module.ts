@@ -4,6 +4,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { DatabaseConfig } from './core/database/database.config';
 import * as Joi from 'joi';
 import envSchema from '@constants/env-schema';
+import { PaymentModule } from '@modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import envSchema from '@constants/env-schema';
     SequelizeModule.forRootAsync({
       useClass: DatabaseConfig,
     }),
+    PaymentModule,
   ],
   providers: [],
 })

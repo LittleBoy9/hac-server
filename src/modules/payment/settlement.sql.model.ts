@@ -2,6 +2,7 @@ import {
   AllowNull,
   Column,
   DataType,
+  Default,
   Model,
   PrimaryKey,
   Table,
@@ -9,7 +10,11 @@ import {
 
 @Table({ paranoid: true })
 export class Settlement extends Model {
+  @Default(DataType.UUIDV4)
   @PrimaryKey
+  @Column(DataType.UUID)
+  id: string;
+
   @AllowNull(false)
   @Column(DataType.STRING)
   transactionId: string;
@@ -52,7 +57,8 @@ export class Settlement extends Model {
   @Column(DataType.BOOLEAN)
   isReversal: boolean;
 
-  @Column(DataType.STRING)
+  @AllowNull(true)
+  @Column(DataType.DATE)
   transactionStartDateTime: string;
 
   @Column(DataType.FLOAT)
@@ -120,7 +126,8 @@ export class Settlement extends Model {
   @Column(DataType.STRING)
   programName: string;
 
-  @Column(DataType.STRING)
+  @AllowNull(true)
+  @Column(DataType.DATE)
   axisPayoutCreated: string;
 
   @Column(DataType.STRING)

@@ -78,7 +78,6 @@ async function bootstrap() {
     .setTitle('Airtribe Hackathon Server')
     .setDescription('irtribe Hackathon Server')
     .setVersion('v1.0.0')
-    .addBearerAuth()
     .build();
 
   const doucment = SwaggerModule.createDocument(app, config);

@@ -4,6 +4,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { DatabaseConfig } from './core/database/database.config';
 import * as Joi from 'joi';
 import envSchema from '@constants/env-schema';
+import { AskModule } from '@modules/ask/ask.module';
 import { PaymentModule } from '@modules/payment/payment.module';
 
 @Module({
@@ -21,6 +22,8 @@ import { PaymentModule } from '@modules/payment/payment.module';
       useClass: DatabaseConfig,
     }),
     PaymentModule,
+
+    AskModule,
   ],
   providers: [],
 })

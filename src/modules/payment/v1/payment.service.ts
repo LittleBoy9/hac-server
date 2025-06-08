@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Refund } from '../refund.sql.model';
 import { Support } from '../support.sql.model';
 import * as fs from 'fs';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 @Injectable()
 export class PaymentService {
@@ -16,6 +16,7 @@ export class PaymentService {
     private refundRepo: typeof Refund,
     @InjectModel(Support)
     private supportRepo: typeof Support,
+    // private sequelize: Sequelize,
   ) {}
 
   private mapTransaction(record: any): Partial<Settlement> {
@@ -309,5 +310,12 @@ export class PaymentService {
     }
 
     return returnData;
+  }
+
+  async getDataByQuery(query: string) {
+    const rowData = await this.settlementRepo.sequelize.query(query);
+    const result = rowData[0];
+    console.log(result);
+    return result;
   }
 }

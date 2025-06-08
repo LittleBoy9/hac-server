@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Refund } from '../refund.sql.model';
 import { Support } from '../support.sql.model';
 import * as fs from 'fs';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class PaymentService {
@@ -197,5 +198,116 @@ export class PaymentService {
     console.log(
       `✅ Successfully imported ${records.length} records into ${type} table`,
     );
+  }
+
+  async getData(data: GetQuery) {
+    const { columns, table, filter } = data;
+    const returnData = {};
+    for (let i = 0; i < table.length; i++) {
+      const t = table[i];
+      let where = {};
+      const filterData = filter[t] as Record<
+        string,
+        DateFilter | StringFilter | NumberFilter
+      >;
+
+      const keys = Object.keys(filterData);
+      for (let j = 0; j < keys.length; j++) {
+        const f = filterData[keys[j]];
+        if (f.type === 'date' || f.type === 'number') {
+          if (!where[keys[j]]) {
+            where[keys[j]] = {};
+          }
+          if (f.gte) {
+            where[keys[j]] = {
+              ...where[keys[j]],
+              [Op.gte]: f.gte,
+            };
+          }
+          if (f.lte) {
+            where[keys[j]] = {
+              ...where[keys[j]],
+              [Op.gte]: f.gte,
+            };
+          }
+          if (f.eq) {
+            where[keys[j]] = {
+              ...where[keys[j]],
+              [Op.eq]: f.eq,
+            };
+          }
+          if (f.gt) {
+            where[keys[j]] = {
+              ...where[keys[j]],
+              [Op.gt]: f.gt,
+            };
+          }
+          if (f.lt) {
+            where[keys[j]] = {
+              ...where[keys[j]],
+              [Op.lt]: f.lt,
+            };
+          }
+        } else if (f.type === 'string') {
+          if (!where[keys[j]]) {
+            where[keys[j]] = {};
+          }
+          if (f.eq) {
+            where[keys[j]] = {
+              ...where[keys[j]],
+              [Op.eq]: f.eq,
+            };
+          }
+          if (f.leq) {
+            where[keys[j]] = {
+              ...where[keys[j]],
+              [Op.iLike]: `%${f.leq}`,
+            };
+          }
+          if (f.req) {
+            where[keys[j]] = {
+              ...where[keys[j]],
+              [Op.iLike]: `${f.req}%`,
+            };
+          }
+          if (f.leq) {
+            where[keys[j]] = {
+              ...where[keys[j]],
+              [Op.iLike]: `%${f.beq}%`,
+            };
+          }
+        }
+      }
+
+      let rows = [];
+      switch (t) {
+        case 'settlement':
+          rows = await this.settlementRepo.findAll({
+            where,
+            attributes: columns[t],
+            logging: console.log,
+          });
+          returnData[t] = rows;
+          break;
+        case 'refund':
+          rows = await this.refundRepo.findAll({
+            where,
+            attributes: columns[t],
+            logging: console.log,
+          });
+          returnData[t] = rows;
+          break;
+        case 'support':
+          rows = await this.supportRepo.findAll({
+            where,
+            attributes: columns[t],
+            logging: console.log,
+          });
+          returnData[t] = rows;
+          break;
+      }
+    }
+
+    return returnData;
   }
 }

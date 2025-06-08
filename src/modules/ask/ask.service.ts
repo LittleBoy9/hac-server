@@ -164,7 +164,7 @@ export class AskService {
     try {
       const result = await this.getSqlQuery(query);
       const data = await this.paymentService.getDataByQuery(result);
-      return { query: result, data };
+      return { data };
     } catch (e) {
       console.error(e);
       return null;

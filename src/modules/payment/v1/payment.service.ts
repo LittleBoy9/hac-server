@@ -9,6 +9,10 @@ import { Op, Sequelize } from 'sequelize';
 
 @Injectable()
 export class PaymentService {
+  BATCH_SIZE = 1000;
+  MAX_PER_DATE = 10;
+
+  dateUsageMap = new Map<string, number>();
   constructor(
     @InjectModel(Settlement)
     private settlementRepo: typeof Settlement,
@@ -317,5 +321,71 @@ export class PaymentService {
     const result = rowData[0];
     console.log(result);
     return result;
+  }
+
+  getRandomPastDateWithLimit(): Date {
+    while (true) {
+      const now = new Date();
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(now.getFullYear() - 1);
+
+      const randomTime =
+        oneYearAgo.getTime() +
+        Math.random() * (now.getTime() - oneYearAgo.getTime());
+      const randomDate = new Date(randomTime);
+
+      // Normalize to YYYY-MM-DD string (for counting)
+      const dateStr = randomDate.toISOString().split('T')[0];
+
+      const currentCount = this.dateUsageMap.get(dateStr) ?? 0;
+
+      if (currentCount < this.MAX_PER_DATE) {
+        this.dateUsageMap.set(dateStr, currentCount + 1);
+        return randomDate;
+      }
+
+      // else: retry with another random date
+    }
+  }
+
+  async updateRefundDatesInBatches() {
+    const totalCount = await Refund.count();
+    console.log(`Total refunds to update: ${totalCount}`);
+
+    for (let offset = 0; offset < totalCount; offset += this.BATCH_SIZE) {
+      console.log(`Processing batch offset: ${offset}`);
+
+      const refunds = await Refund.findAll({
+        attributes: ['id'],
+        offset,
+        limit: this.BATCH_SIZE,
+      });
+
+      const updates = refunds.map((refund) => ({
+        id: refund.id,
+        transactionStartDateTime: this.getRandomPastDateWithLimit(),
+      }));
+
+      const transaction = await Refund.sequelize!.transaction();
+
+      try {
+        for (const update of updates) {
+          await Refund.update(
+            { transactionStartDateTime: update.transactionStartDateTime },
+            { where: { id: update.id }, transaction },
+          );
+        }
+
+        await transaction.commit();
+        console.log(`Batch ${offset / this.BATCH_SIZE + 1} committed.`);
+      } catch (err) {
+        console.error('Error in batch:', err);
+        await transaction.rollback();
+        throw err;
+      }
+    }
+
+    console.log('All batches completed.');
+    return `Updated ${totalCount} refunds with random past dates.`;
   }
 }

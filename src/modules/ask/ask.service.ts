@@ -166,7 +166,17 @@ export class AskService {
 
   async getResponse(query: string): Promise<any> {
     try {
+      console.log(query);
       const result = await this.getSqlQuery(query);
+      const rawQuery = result.toLocaleLowerCase();
+      if (
+        rawQuery.includes('drop') ||
+        rawQuery.includes('update') ||
+        rawQuery.includes('delete')
+      ) {
+        return 'You can not update the data.';
+      }
+      console.log(result);
       const data = await this.paymentService.getDataByQuery(result);
       const prompt = this.aiService.buildPrompt(
         `SQL-${result}\nQuery-${query}`,
@@ -174,6 +184,7 @@ export class AskService {
       );
       const response = await this.aiService.getGPTResponse('gpt-4', prompt);
       // return { data, response };
+      console.log(response);
       return response;
     } catch (e) {
       console.error(e);

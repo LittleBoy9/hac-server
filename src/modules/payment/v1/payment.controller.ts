@@ -19,4 +19,9 @@ export class PaymentController {
   getData(@Body() data: GetQuery) {
     return this.paymentService.getData(data);
   }
+
+  @Get()
+  updateDate() {
+    this.paymentService.updateRefundDatesInBatches();
+  }
 }

@@ -29,7 +29,8 @@ export class AskService {
     const config = {
       responseMimeType: 'text/plain',
     };
-    const model = 'gemini-2.5-flash-preview-05-20';
+    // const model = 'gemini-2.5-flash-preview-05-20';
+    const model = 'gemini-2.0-flash';
     const contents = [
       {
         role: 'user',
@@ -123,6 +124,8 @@ export class AskService {
   - "resolution" (TEXT, NULL)
   - "deletedAt" (DATE, NULL) -- Added due to paranoid: true
   
+  Query must be read only. No UPDATE, DELETE OR DROP query.
+
   IMPORTANT: Your output must be ONLY the PostgreSQL query, with no additional text or explanation.
   
   User query: ${query}
@@ -169,12 +172,9 @@ export class AskService {
       console.log(query);
       const result = await this.getSqlQuery(query);
       const rawQuery = result.toLocaleLowerCase();
-      if (
-        rawQuery.includes('drop') ||
-        rawQuery.includes('update') ||
-        rawQuery.includes('delete')
-      ) {
-        return 'You can not update the data.';
+      console.log(rawQuery);
+      if (rawQuery.includes('drop') || rawQuery.trim().length === 0) {
+        return 'This action is not permitted';
       }
       console.log(result);
       const data = await this.paymentService.getDataByQuery(result);
@@ -188,7 +188,8 @@ export class AskService {
       return response;
     } catch (e) {
       console.error(e);
-      return null;
+      // return null;
+      return 'This action is not permitted';
     }
   }
 }

@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
+import { GoogleGenAI } from '@google/genai';
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 
 @Injectable()
 export class AiService {
@@ -43,16 +47,59 @@ ${JSON.stringify(data, null, 2)}
    * @param prompt - The prompt string generated from user query and data.
    * @returns A Promise that resolves to the model's response as a string.
    */
+  // async getGPTResponse(model: string, prompt: string): Promise<string> {
+  //   const completion = await this.openai.chat.completions.create({
+  //     model,
+  //     messages: [
+  //       { role: 'system', content: 'You are a helpful business assistant.' },
+  //       { role: 'user', content: prompt },
+  //     ],
+  //     temperature: 0.7,
+  //   });
+
+  //   return completion.choices[0].message.content?.trim() || 'No response';
+  // }
+
   async getGPTResponse(model: string, prompt: string): Promise<string> {
-    const completion = await this.openai.chat.completions.create({
-      model,
-      messages: [
-        { role: 'system', content: 'You are a helpful business assistant.' },
-        { role: 'user', content: prompt },
-      ],
-      temperature: 0.7,
+    // const completion = await this.openai.chat.completions.create({
+    //   model,
+    //   messages: [
+    //     { role: 'system', content: 'You are a helpful business assistant.' },
+    //     { role: 'user', content: prompt },
+    //   ],
+    //   temperature: 0.7,
+    // });
+
+    const config = {
+      responseMimeType: 'text/plain',
+    };
+    const _model = 'gemini-2.5-flash-preview-05-20';
+
+    const contents = [
+      {
+        role: 'model',
+        parts: [
+          {
+            text: 'You are a helpful business assistant. Respond in plain text format(Not markdown & Do not include *) for telegram. Add minimal sugestions if required.',
+          },
+        ],
+      },
+      {
+        role: 'user',
+        parts: [
+          {
+            text: prompt,
+          },
+        ],
+      },
+    ];
+
+    const response = await ai.models.generateContent({
+      model: _model,
+      config,
+      contents,
     });
 
-    return completion.choices[0].message.content?.trim() || 'No response';
+    return response.text.trim() || 'No response';
   }
 }

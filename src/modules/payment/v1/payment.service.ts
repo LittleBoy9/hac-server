@@ -6,6 +6,7 @@ import { Refund } from '../refund.sql.model';
 import { Support } from '../support.sql.model';
 import * as fs from 'fs';
 import { Op, Sequelize } from 'sequelize';
+import * as moment from 'moment';
 
 @Injectable()
 export class PaymentService {
@@ -22,8 +23,15 @@ export class PaymentService {
     private supportRepo: typeof Support,
     // private sequelize: Sequelize,
   ) {}
+  currentDate = moment();
+  currentDayCount = 0;
 
   private mapTransaction(record: any): Partial<Settlement> {
+    if (this.currentDayCount >= 10) {
+      this.currentDate = this.currentDate.clone().subtract(1, 'day');
+      this.currentDayCount = 0;
+    }
+    this.currentDayCount++;
     return {
       transactionId: record.transaction_id,
       merchantDisplayName: record.merchant_display_name,
@@ -31,13 +39,18 @@ export class PaymentService {
       acquirerName: record.acquirer_name,
       issuerName: record.issuer_name,
       paymentModeId: record.payment_mode_id,
-      paymentModeName: record.payment_mode_name,
+      paymentModeName:
+        record.payment_mode_name === 'CREDIT/DEBIT CARD'
+          ? Date.now() % 7 === 1
+            ? 'CREDIT CARD'
+            : 'DEBIT CARD'
+          : record.payment_mode_name,
       cardTypeAssociationName: record.card_type_association_name,
       amount: parseFloat(record.amount),
       isAggregator: record.is_aggregator === 'TRUE',
       isReversal: record.is_reversal === 'TRUE',
       transactionStartDateTime: this.formatDate(
-        record.transaction_start_date_time,
+        this.currentDate.format('DD/MM/YYYY'),
       ),
       txnRefundAmt: parseFloat(record.txn_refund_amt || '0'),
       batchId: record.batch_id,
@@ -63,13 +76,22 @@ export class PaymentService {
       sds: record.sds,
       sdscycle: record.sdscycle,
       programName: record.program_name,
-      axisPayoutCreated: this.formatDate(record.axis_payout_created),
+      axisPayoutCreated: this.formatDate(this.currentDate.format('DD/MM/YYYY')),
       payoutStatus: record.payout_status,
       payoutNodalAcc: record.payout_nodal_acc,
     };
   }
 
   private mapRefund(record: any): Partial<Refund> {
+    if (this.currentDayCount >= 10) {
+      this.currentDate = this.currentDate.clone().subtract(1, 'day');
+      this.currentDayCount = 0;
+    }
+    this.currentDayCount++;
+    console.log(
+      this.currentDate.format('DD/MM/YYYY'),
+      this.formatDate(this.currentDate.format('DD/MM/YY')),
+    );
     return {
       transactionId: record.transaction_id,
       merchantDisplayName: record.merchant_display_name,
@@ -84,9 +106,11 @@ export class PaymentService {
       acquirerResponseDescription: record.acquirer_response_description,
       transactionResponseCode: record.transaction_response_code,
       transactionStartDateTime: this.formatDate(
-        record.transaction_start_date_time,
+        this.currentDate.format('DD/MM/YYYY'),
       ),
-      txnCompletionDateTime: this.formatDate(record.txn_completion_date_time),
+      txnCompletionDateTime: this.formatDate(
+        this.currentDate.format('DD/MM/YYYY'),
+      ),
       timeToComplete: record.time_to_complete,
       transactionResponseMessage: record.transaction_response_message,
       isAggregator: record.is_aggregator === 'TRUE',
@@ -100,7 +124,7 @@ export class PaymentService {
       businessTechnicalDecline: record.business_technical_decline,
       saleTxnDateTime:
         record.sale_txn_date_time !== '-'
-          ? this.formatDate(record.sale_txn_date_time)
+          ? this.formatDate(this.currentDate.format('DD/MM/YYYY'))
           : null,
     };
   }
@@ -155,7 +179,7 @@ export class PaymentService {
   }
 
   async importFromJson(type: 'settlement' | 'refund' | 'support') {
-    const path = `${type}.json`;
+    const path = `${type}-data.json`;
     const fileContent = fs.readFileSync(path, 'utf8');
 
     let records: any[];
